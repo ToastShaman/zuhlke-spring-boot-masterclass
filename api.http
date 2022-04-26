@@ -1,3 +1,15 @@
 ###
 GET http://localhost:9090/ping
 Accept: application/json
+
+###
+GET http://localhost:9090/v1/coronavirus/sync/new-cases-by-publish-date
+Accept: application/json
+
+###
+GET http://localhost:9090/v1/coronavirus/async/new-cases-by-publish-date
+Accept: application/json
+
+###
+GET http://localhost:9090/v1/coronavirus/caching/new-cases-by-publish-date
+Accept: application/json

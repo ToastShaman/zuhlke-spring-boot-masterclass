@@ -1,2 +1,14 @@
 server:
   port: 9090
+
+spring:
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+      use-big-decimal-for-floats: true
+    serialization:
+      indent-output: false
+
+coronavirus:
+  base-url: https://api.coronavirus.data.gov.uk
