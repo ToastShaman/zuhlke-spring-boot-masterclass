@@ -1,5 +1,23 @@
 server:
   port: 9090
+management:
+  server:
+    port: 9091
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    info:
+      enabled: true
+    health:
+      enabled: true
+    prometheus:
+      enabled: true
+  info:
+    build:
+      enabled: true
 
 spring:
   jackson:
