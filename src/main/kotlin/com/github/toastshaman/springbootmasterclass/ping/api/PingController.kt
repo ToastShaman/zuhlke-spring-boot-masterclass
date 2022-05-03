@@ -21,4 +21,7 @@ class PingController {
         @Valid @RequestBody pingRequest: PingRequest,
         request: HttpServletRequest
     ) = ResponseEntity.ok(PingResponse("""${pingRequest.message} $name"""))
+
+    @GetMapping("/secure/ping")
+    fun securePing() = ResponseEntity.ok(PingResponse("pong"))
 }

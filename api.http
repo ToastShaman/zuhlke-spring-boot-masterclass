@@ -34,3 +34,8 @@ Accept: application/json
 ###
 GET http://localhost:9091/actuator/prometheus
 Accept: text/plain
+
+###
+GET http://localhost:9090/secure/ping
+Accept: application/json
+Authorization: Bearer TODO
