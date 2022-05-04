@@ -1,6 +1,7 @@
 package com.github.toastshaman.springbootmasterclass.ping.api
 
 import assertions.statusCodeIs
+import com.github.toastshaman.springbootmasterclass.events.PrintingEvents
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
@@ -10,7 +11,7 @@ class PingControllerTest {
 
     @Test
     fun `returns pong`() {
-        val response = PingController().ping()
+        val response = PingController(PrintingEvents()).ping()
 
         expectThat(response)
             .statusCodeIs(200)
