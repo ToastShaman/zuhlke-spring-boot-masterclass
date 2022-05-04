@@ -38,6 +38,7 @@ class WebSecurityConfig(private val hmacKey: HmacKey) : WebSecurityConfigurerAda
             .and()
             .authorizeRequests()
             .antMatchers("/v1/**").permitAll()
+            .antMatchers("/ping/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
             .anyRequest().authenticated()
             .and()
