@@ -13,13 +13,15 @@ management:
       enabled: true
     health:
       enabled: true
+      show-details: always
     prometheus:
       enabled: true
   info:
     build:
       enabled: true
-
-spring:
+  health:
+    circuitbreakers:
+      enabled: true
   jackson:
     default-property-inclusion: non_null
     deserialization:
@@ -30,3 +32,10 @@ spring:
 
 coronavirus:
   base-url: https://api.coronavirus.data.gov.uk
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      covid:
+        registerHealthIndicator: true
+        slidingWindowSize: 100

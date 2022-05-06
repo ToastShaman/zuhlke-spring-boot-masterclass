@@ -24,6 +24,10 @@ GET http://localhost:9090/v1/coronavirus/caching/new-cases-by-publish-date
 Accept: application/json
 
 ###
+GET http://localhost:9090/v1/coronavirus/resilient/new-cases-by-publish-date
+Accept: application/json
+
+###
 GET http://localhost:9091/actuator/info
 Accept: application/json
 
