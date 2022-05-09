@@ -4,6 +4,7 @@ import org.jose4j.jws.AlgorithmIdentifiers.HMAC_SHA512
 import org.jose4j.jws.JsonWebSignature
 import org.jose4j.jwt.JwtClaims
 import org.jose4j.jwt.consumer.JwtConsumerBuilder
+import org.jose4j.jwt.consumer.Validator
 import org.jose4j.keys.HmacKey
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
@@ -15,10 +16,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy.STATELESS
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import java.time.Duration
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -40,10 +43,15 @@ class WebSecurityConfig(private val hmacKey: HmacKey) : WebSecurityConfigurerAda
             .antMatchers("/v1/**").permitAll()
             .antMatchers("/ping/**").permitAll()
             .antMatchers("/actuator/**").permitAll()
+            .antMatchers("/admin/**").hasAnyAuthority(Roles.ADMIN)
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(JwtTokenFilter(hmacKey), UsernamePasswordAuthenticationFilter::class.java)
     }
+}
+
+object Roles {
+    const val ADMIN = "ADMIN"
 }
 
 @Configuration
@@ -59,11 +67,12 @@ class JwtKeyPrinter(private val hmacKey: HmacKey) {
     fun printKey() {
 
         val claims = JwtClaims().apply {
-            setExpirationTimeMinutesInTheFuture(10f)
-            setGeneratedJwtId()
+            setExpirationTimeMinutesInTheFuture(Duration.ofMinutes(60))
+            setNotBeforeMinutesInThePast(Duration.ofMinutes(2))
             setIssuedAtToNow()
-            setNotBeforeMinutesInThePast(2f)
-            subject = "subject"
+            setStringListClaim("roles", listOf(Roles.ADMIN))
+            issuer = "spring-boot-masterclass"
+            subject = "alice@foobar.com"
         }
 
         val jws = JsonWebSignature().apply {
@@ -75,13 +84,25 @@ class JwtKeyPrinter(private val hmacKey: HmacKey) {
         println()
         println("""Valid Token: ${jws.compactSerialization}""")
     }
+
+    private fun JwtClaims.setExpirationTimeMinutesInTheFuture(duration: Duration) {
+        setExpirationTimeMinutesInTheFuture(duration.toMinutes().toFloat())
+    }
+
+    private fun JwtClaims.setNotBeforeMinutesInThePast(duration: Duration) {
+        setNotBeforeMinutesInThePast(duration.toMinutes().toFloat())
+    }
 }
 
 class JwtTokenFilter(hmacKey: HmacKey) : OncePerRequestFilter() {
 
     private val consumer = JwtConsumerBuilder()
-        .setRequireExpirationTime()
         .setAllowedClockSkewInSeconds(30)
+        .setRequireExpirationTime()
+        .setRequireSubject()
+        .setRequireNotBefore()
+        .setExpectedIssuer("spring-boot-masterclass")
+        .registerValidator(Validator { ctx -> if (ctx.jwtClaims.hasClaim("roles")) null else "missing claim [roles]" })
         .setVerificationKey(hmacKey)
         .build()
 
@@ -103,9 +124,14 @@ class JwtTokenFilter(hmacKey: HmacKey) : OncePerRequestFilter() {
             return
         }
 
-        val authentication = UsernamePasswordAuthenticationToken(context, null, emptyList())
-        SecurityContextHolder.getContext().authentication = authentication
+        SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(
+            context,
+            null,
+            context.jwtClaims.getGrantedAuthorities()
+        )
 
         filterChain.doFilter(request, response)
     }
+
+    private fun JwtClaims.getGrantedAuthorities() = getStringListClaimValue("roles").map(::SimpleGrantedAuthority)
 }
