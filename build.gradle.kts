@@ -1,3 +1,4 @@
+import jooq.generate.JooqGeneratorTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -24,6 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-json-org")
@@ -36,6 +38,10 @@ dependencies {
     implementation("dev.forkhandles:values4k")
     implementation("com.github.ben-manes.caffeine:caffeine:3.1.0")
     implementation("org.bitbucket.b_c:jose4j:0.7.12")
+    implementation("org.flywaydb:flyway-core")
+
+    @Suppress("GradlePackageUpdate")
+    runtimeOnly("com.h2database:h2:1.4.200")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
@@ -63,6 +69,8 @@ dependencyManagement {
 }
 
 tasks.withType<KotlinCompile> {
+    dependsOn("generate-sources")
+
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "11"
@@ -71,4 +79,18 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir("${buildDir}/generated/sources/jooq")
+        }
+    }
+}
+
+tasks.register<JooqGeneratorTask>("generate-sources") {
+    migrationLocations.set("filesystem:${project.projectDir}/src/main/resources/db/migration")
+    outputPackageName.set("com.github.toastshaman.springbootmasterclass.todo.jooq")
+    outputDirectory.set(layout.buildDirectory.dir("generated/sources/jooq"))
 }

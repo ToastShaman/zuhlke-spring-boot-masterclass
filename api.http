@@ -8,7 +8,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "message": "Hello"
+    "message": "Hello"
 }
 
 ###
@@ -43,3 +43,24 @@ Accept: text/plain
 GET http://localhost:9090/secure/ping
 Accept: application/json
 Authorization: Bearer TODO
+
+###
+GET http://localhost:9090/todos
+Accept: application/json
+
+###
+POST http://localhost:9090/todos
+Accept: application/json
+Content-Type: application/json
+
+{
+    "title": "Shopping",
+    "tasks": [
+        {
+            "description": "Milk"
+        },
+        {
+            "description": "Eggs"
+        }
+    ]
+}

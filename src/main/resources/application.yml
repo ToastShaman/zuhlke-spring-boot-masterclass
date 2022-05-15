@@ -22,6 +22,10 @@ management:
   health:
     circuitbreakers:
       enabled: true
+
+spring:
+  datasource:
+    embedded-database-connection: h2
   jackson:
     default-property-inclusion: non_null
     deserialization:
@@ -29,6 +33,10 @@ management:
       use-big-decimal-for-floats: true
     serialization:
       indent-output: false
+
+logging:
+  level:
+    org.jooq.tools.LoggerListener: DEBUG
 
 coronavirus:
   base-url: https://api.coronavirus.data.gov.uk
